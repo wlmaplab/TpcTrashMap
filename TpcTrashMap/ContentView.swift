@@ -86,7 +86,7 @@ struct ContentView: View {
             }
         }
         .onAppear {
-            dataFetcher.downloadData()
+            dataFetcher.download()
         }
     }
 }

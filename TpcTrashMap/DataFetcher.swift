@@ -20,58 +20,77 @@ class DataFetcher: ObservableObject {
     
     @Published var dataArray = [TrashBin]()
     @Published var progress = 0.0
-    var datasetDownloadedCount = 0
     
-    private let datasetDict = ["士林區": "97cc923a-e9ee-4adc-8c3d-335567dc15d3",
-                               "大同區": "5fa14e06-018b-4851-8316-1ff324384f79",
-                               "大安區": "f40cd66c-afba-4409-9289-e677b6b8d00e",
-                               "中山區": "33b2c4c5-9870-4ee9-b280-a3a297c56a22",
-                               "中正區": "0b544701-fb47-4fa9-90f1-15b1987da0f5",
-                               "內湖區": "37eac6d1-6569-43c9-9fcf-fc676417c2cd",
-                               "文山區": "46647394-d47f-4a4d-b0f0-14a60ac2aade",
-                               "北投區": "05d67de9-a034-4177-9f53-10d6f79e02cf",
-                               "松山區": "179d0fe1-ef31-4775-b9f0-c17b3adf0fbc",
-                               "信義區": "8cbb344b-83d2-4176-9abd-d84508e7dc73",
-                               "南港區": "7b955414-f460-4472-b1a8-44819f74dc86",
-                               "萬華區": "5697d81f-7c9d-43fc-a202-ae8804bbd34b"]
+    private var datasetDownloadedCount = 0
+    private var datasetMaxCount = 0
+    private let fetchLimit = 1000
+    private var fetchOffset = 0
+    private var tmpResults : Array<Dictionary<String,Any>>?
+    
+    
+    private let urlString = "https://data.taipei/api/v1/dataset/807317ce-fb7b-4a85-b28e-2bfccaf59a91?scope=resourceAquire"
+    
     
     
     // MARK: - Functions
     
-    func datasetCount() -> Int {
-        return datasetDict.count
+    func download() {
+        print(">> 正在下載資料集...")
+        dataArray.removeAll()
+        
+        tmpResults = Array<Dictionary<String,Any>>()
+        fetchOffset = 0
+        datasetDownloadedCount = 0
+        datasetMaxCount = 5
+        
+        downloadData()
     }
     
-    func downloadData() {
-        print(">> 正在下載資料集...")
-        
-        dataArray.removeAll()
-        datasetDownloadedCount = 0
-        
-        var tmpArray = [TrashBin]()
-        
-        for (districtName, datasetID) in datasetDict {
-            fetch(datasetID: datasetID, limit: 1000, offset: 0) { json in
-                self.datasetDownloadedCount += 1
-                self.setProgressValue()
-                
-                if let json = json,
-                   let result = json["result"] as? Dictionary<String,Any>,
-                   let results = result["results"] as? Array<Dictionary<String,Any>>
-                {
-                    print("\(districtName) count: \(results.count)")
-                    for info in results {
-                        if let item = self.createTrashBinItem(info) {
-                            tmpArray.append(item)
-                        }
-                    }
+    
+    // MARK: - Download Data
+    
+    private func downloadData() {
+        fetch(limit: fetchLimit, offset: fetchOffset) { json in
+            var resultsCount = 0
+            if let json = json,
+               let result = json["result"] as? Dictionary<String,Any>,
+               let results = result["results"] as? Array<Dictionary<String,Any>>
+            {
+                if let dataCount = result["count"] as? Int, self.datasetDownloadedCount == 0 {
+                    let (quotient, remainder) = dataCount.quotientAndRemainder(dividingBy: self.fetchLimit)
+                    self.datasetMaxCount = quotient + (remainder > 0 ? 1 : 0)
                 }
-                
-                if self.datasetDownloadedCount >= self.datasetCount() {
-                    self.dataArray.append(contentsOf: tmpArray)
+                self.tmpResults?.append(contentsOf: results)
+                resultsCount = results.count
+            }
+            
+            self.datasetDownloadedCount += 1
+            self.setProgressValue()
+            
+            if resultsCount >= self.fetchLimit {
+                self.fetchOffset += self.fetchLimit
+                self.downloadData()
+            } else {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    self.convertResultsToDataArray()
                 }
             }
         }
+    }
+    
+    private func convertResultsToDataArray() {
+        guard let results = tmpResults else { return }
+        
+        var tmpArray = [TrashBin]()
+        
+        for info in results {
+            if let item = createTrashBinItem(info) {
+                tmpArray.append(item)
+            }
+        }
+        
+        dataArray.append(contentsOf: tmpArray)
+        print(">> dataArray count: \(dataArray.count)")
     }
     
     
@@ -83,7 +102,7 @@ class DataFetcher: ObservableObject {
         
         if let lat = latitude, let lng = longitude {
             let coordinate = CLLocationCoordinate2D(latitude: lat, longitude: lng)
-            let address = "\(info["路名"] ?? "")\(info["段、號及其他註明"] ?? "")"
+            let address = "\(info["路名"] ?? "")\(info["段號及其他註明"] ?? "")"
             return TrashBin(coordinate: coordinate, address: address)
         }
         return nil
@@ -93,21 +112,13 @@ class DataFetcher: ObservableObject {
     // MARK: - Change Progress Value
     
     private func setProgressValue() {
-        progress = Double(datasetDownloadedCount) / Double(datasetDict.count)
-    }
-    
-        
-    // MARK: - API URL String
-    
-    private func urlStringWith(datasetID: String) -> String {
-        return "https://data.taipei/api/v1/dataset/\(datasetID)?scope=resourceAquire"
+        progress = Double(datasetDownloadedCount) / Double(datasetMaxCount)
     }
     
     
     // MARK: - Fetch Data
     
-    private func fetch(datasetID: String, limit: Int, offset: Int, callback: @escaping (Dictionary<String,Any>?) -> Void) {
-        let urlString = urlStringWith(datasetID: datasetID)
+    private func fetch(limit: Int, offset: Int, callback: @escaping (Dictionary<String,Any>?) -> Void) {
         httpGET_withFetchJsonObject(URLString: "\(urlString)&limit=\(limit)&offset=\(offset)", callback: callback)
     }
     
