@@ -68,8 +68,8 @@ class TrashBinMapView: MKMapView, MKMapViewDelegate {
     
     func moveToSite() {
         let region = MKCoordinateRegion(center: taipeiSiteCoordinate,
-                                        latitudinalMeters: 700,
-                                        longitudinalMeters: 700)
+                                        latitudinalMeters: 500,
+                                        longitudinalMeters: 500)
         
         self.setRegion(region, animated: false)
     }
