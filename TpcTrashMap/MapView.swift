@@ -56,6 +56,7 @@ class TrashBinMapView: MKMapView, MKMapViewDelegate {
     
     func setup() {
         self.delegate = self
+        self.isPitchEnabled = false
         self.moveToSite()
         
         self.showsUserLocation = true
