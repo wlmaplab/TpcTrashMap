@@ -74,7 +74,7 @@ struct ContentView: View {
                         .cornerRadius(10)
                         .padding(8)
                         .shadow(color: Color(colorScheme == .dark ? .systemGray6 : UIColor(white: 0.8, alpha: 1.0)),
-                                radius: 3, x: 0, y: 0),
+                                radius: 4, x: 0, y: 0),
                         alignment: .topTrailing
                     )
                     .onAppear {
