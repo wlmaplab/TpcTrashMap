@@ -157,8 +157,8 @@ class TrashBinMapView: MKMapView, MKMapViewDelegate {
             firstTimeMoveToUserLocation = false
             
             let region = MKCoordinateRegion(center: location.coordinate,
-                                            latitudinalMeters: 600,
-                                            longitudinalMeters: 600)
+                                            latitudinalMeters: 500,
+                                            longitudinalMeters: 500)
             
             self.setRegion(region, animated: false)
         }
