@@ -153,7 +153,7 @@ class TrashBinMapView: MKMapView, MKMapViewDelegate {
         guard let location = userLocation.location else { return }
         
         if firstTimeMoveToUserLocation {
-            print("緯度:\(location.coordinate.latitude), 經度: \(location.coordinate.longitude)")
+//            print("緯度:\(location.coordinate.latitude), 經度: \(location.coordinate.longitude)")
             firstTimeMoveToUserLocation = false
             
             let region = MKCoordinateRegion(center: location.coordinate,

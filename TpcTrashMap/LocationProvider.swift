@@ -24,7 +24,6 @@ class LocationProvider: NSObject, CLLocationManagerDelegate {
         super.init()
         
         locationManager.delegate = self
-        locationManager.distanceFilter = 1.0
         locationManager.requestWhenInUseAuthorization()
     }
     
@@ -47,7 +46,7 @@ class LocationProvider: NSObject, CLLocationManagerDelegate {
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         guard let location = locations.last else { return }
         
-        print("location: (\(location.coordinate.latitude), \(location.coordinate.longitude))")
+//        print("location: (\(location.coordinate.latitude), \(location.coordinate.longitude))")
         currentLocation = location
     }
 }
