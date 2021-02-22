@@ -18,7 +18,7 @@ struct TrashBin: Identifiable {
 
 class DataFetcher: ObservableObject {
     
-    @Published var dataArray = [TrashBin]()
+    @Published var dataArray : [TrashBin]?
     @Published var progress = 0.0
     
     private var datasetDownloadedCount = 0
@@ -36,7 +36,7 @@ class DataFetcher: ObservableObject {
     
     func download() {
         print(">> 正在下載資料集...")
-        dataArray.removeAll()
+        dataArray = nil
         
         tmpResults = Array<Dictionary<String,Any>>()
         fetchOffset = 0
@@ -89,8 +89,8 @@ class DataFetcher: ObservableObject {
             }
         }
         
-        dataArray.append(contentsOf: tmpArray)
-        print(">> dataArray count: \(dataArray.count)")
+        dataArray = tmpArray
+        print(">> dataArray count: \(tmpArray.count)")
     }
     
     
