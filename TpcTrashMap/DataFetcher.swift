@@ -28,7 +28,7 @@ class DataFetcher: ObservableObject {
     private var tmpResults : Array<Dictionary<String,Any>>?
     
     
-    private let urlString = "https://data.taipei/api/v1/dataset/807317ce-fb7b-4a85-b28e-2bfccaf59a91?scope=resourceAquire"
+    private let urlString = "https://data.taipei/api/v1/dataset/68989dd8-4cb6-44cf-9b7b-00b0e6b5fd90?scope=resourceAquire"
     
     
     
