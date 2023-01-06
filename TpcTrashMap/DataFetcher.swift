@@ -24,7 +24,8 @@ class DataFetcher: ObservableObject {
     private var fetchOffset = 0
     private var tmpResults : Array<Dictionary<String,Any>>?
     
-    private let urlString = "https://data.taipei/api/v1/dataset/68989dd8-4cb6-44cf-9b7b-00b0e6b5fd90?scope=resourceAquire"
+    private let infoUrlString = "https://wlmaplab.github.io/json/tpc-trash-dataset.json"
+    private var datasetUrlString = ""
     
     
     // MARK: - Functions
@@ -36,11 +37,23 @@ class DataFetcher: ObservableObject {
         tmpResults = Array<Dictionary<String,Any>>()
         fetchOffset = 0
         
-        downloadData()
+        downloadInfoJson()
     }
     
     
     // MARK: - Download Data
+    
+    private func downloadInfoJson() {
+        httpGET_withFetchJsonObject(URLString: infoUrlString) { json in
+            if let json = json,
+               let urlStr = json["url"] as? String
+            {
+                self.datasetUrlString = urlStr
+            }
+            self.downloadData()
+        }
+    }
+    
     
     private func downloadData() {
         fetch(limit: fetchLimit, offset: fetchOffset) { json in
@@ -98,7 +111,7 @@ class DataFetcher: ObservableObject {
     // MARK: - Fetch Data
     
     private func fetch(limit: Int, offset: Int, callback: @escaping (Dictionary<String,Any>?) -> Void) {
-        httpGET_withFetchJsonObject(URLString: "\(urlString)&limit=\(limit)&offset=\(offset)", callback: callback)
+        httpGET_withFetchJsonObject(URLString: "\(datasetUrlString)&limit=\(limit)&offset=\(offset)", callback: callback)
     }
     
     
