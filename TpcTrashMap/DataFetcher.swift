@@ -19,17 +19,12 @@ struct TrashBin: Identifiable {
 class DataFetcher: ObservableObject {
     
     @Published var dataArray : [TrashBin]?
-    @Published var progress = 0.0
     
-    private var datasetDownloadedCount = 0
-    private var datasetMaxCount = 0
     private let fetchLimit = 1000
     private var fetchOffset = 0
     private var tmpResults : Array<Dictionary<String,Any>>?
     
-    
     private let urlString = "https://data.taipei/api/v1/dataset/68989dd8-4cb6-44cf-9b7b-00b0e6b5fd90?scope=resourceAquire"
-    
     
     
     // MARK: - Functions
@@ -40,8 +35,6 @@ class DataFetcher: ObservableObject {
         
         tmpResults = Array<Dictionary<String,Any>>()
         fetchOffset = 0
-        datasetDownloadedCount = 0
-        datasetMaxCount = 5
         
         downloadData()
     }
@@ -56,16 +49,9 @@ class DataFetcher: ObservableObject {
                let result = json["result"] as? Dictionary<String,Any>,
                let results = result["results"] as? Array<Dictionary<String,Any>>
             {
-                if let dataCount = result["count"] as? Int, self.datasetDownloadedCount == 0 {
-                    let (quotient, remainder) = dataCount.quotientAndRemainder(dividingBy: self.fetchLimit)
-                    self.datasetMaxCount = quotient + (remainder > 0 ? 1 : 0)
-                }
                 self.tmpResults?.append(contentsOf: results)
                 resultsCount = results.count
             }
-            
-            self.datasetDownloadedCount += 1
-            self.setProgressValue()
             
             if resultsCount >= self.fetchLimit {
                 self.fetchOffset += self.fetchLimit
@@ -106,13 +92,6 @@ class DataFetcher: ObservableObject {
             return TrashBin(coordinate: coordinate, address: address)
         }
         return nil
-    }
-    
-    
-    // MARK: - Change Progress Value
-    
-    private func setProgressValue() {
-        progress = Double(datasetDownloadedCount) / Double(datasetMaxCount)
     }
     
     
