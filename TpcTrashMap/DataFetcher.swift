@@ -16,6 +16,7 @@ struct TrashBin: Identifiable {
 }
 
 
+@MainActor
 class DataFetcher: ObservableObject {
     
     @Published var dataArray : [TrashBin]?
@@ -30,7 +31,6 @@ class DataFetcher: ObservableObject {
     
     // MARK: - Functions
     
-    @MainActor
     func download() async {
         print(">> 正在下載資料集...")
         dataArray = nil
@@ -53,7 +53,6 @@ class DataFetcher: ObservableObject {
         }
     }
     
-    @MainActor
     private func downloadData() async {
         var resultsCount = 0
         if let json = try? await fetch(limit: fetchLimit, offset: fetchOffset),
